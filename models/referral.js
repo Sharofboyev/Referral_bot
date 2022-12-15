@@ -1,12 +1,10 @@
-const {Pool} = require("pg")
-const config = require("../config");
-
-class DB {
+const pool = require("./index");
+class Referral {
   constructor(){
-    this.pool = new Pool(config.db);
+    this.pool = pool
   }
 
-  getChildren(userId) {
+  async getChildren(userId) {
     return this.pool.query(
       `SELECT ARRAY_AGG(json_build_object('name', users.name, 'username', users.username, 'userId', users.id)), distance AS level
       FROM referrals 
@@ -19,7 +17,7 @@ class DB {
 
   async getAncestor(userId) {
     const res = await this.pool.query(
-      `SELECT users.*
+      `SELECT users.name, users.username, users.id
       FROM referrals
       LEFT JOIN users ON users.id = referrals.ancestor_id
       WHERE child_id = $1 AND distance = 1`, [userId]
@@ -34,8 +32,8 @@ class DB {
     await this.pool.query(`INSERT INTO referrals (ancestor_id, child_id, distance) VALUES ($1, $1, 0)`, [userId]);
     await this.pool.query(`INSERT INTO referrals (ancestor_id, child_id, distance)
       SELECT ancestor_id, $1, distance + 1
-      FROM referrals WHERE child_id = $2`, [userId, ancestorId]);
+      FROM referrals WHERE child_id = $2 AND distance < 5`, [userId, ancestorId]);
   }
 }
 
-module.exports.DB = DB;
+module.exports.Referral = Referral;

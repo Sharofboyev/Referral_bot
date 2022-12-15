@@ -1,4 +1,4 @@
-const { DB } = require("../models/db");
+const { Referral: DB } = require("../models/referral");
 const config = require("../config")
 
 class Referral {
@@ -26,21 +26,25 @@ class Referral {
     return this.DBService.getChildren(userId);
   }
 
+  /**
+   * Finds referrer of user. If user has no referree, returns null
+   * @param {number} userId 
+   * @returns {Promise<*>} User info or null. For example:
+   * ```
+   *  {name: "Olga", username: "olga_best", userId: 123456789}
+   * ``` 
+   */
   getAncestor(userId) {
-    return this.DBService.getAncestor();
+    return this.DBService.getAncestor(userId);
   }
 
   addUser(userId, ancestorId) {
     return this.DBService.addUser(userId, ancestorId);
   }
 
-  /**
-   * Recursive function to 
-   * @param {number} userId Telegram id of user who did this transaction
-   * @param {*} amount Amount of money to be transferred
-   * @param {*} level Level of
-   */
   transaction(userId, amount, level) {
 
   }
 }
+
+module.exports.Referral = Referral
